@@ -1,0 +1,216 @@
+{
+	"_version": "1.22.19",
+	"sap.app": {
+		"id": "lmco.ces.preq",
+		"type": "application",
+		"resources": "resources.json",
+		"i18n": {
+			"bundleUrl": "i18n/i18n.properties",
+			"supportedLocales": [
+				""
+			],
+			"fallbackLocale": ""
+		},
+		"title": "{{appTitle}}",
+		"description": "{{appDescription}}",
+		"applicationVersion": {
+			"version": "1.0.0"
+		},
+		"dataSources": {
+			"mainService": {
+				"uri": "/sap/opu/odata/sap/z_ces_preq_srv/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/metadata.xml"
+				}
+			}
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"fullWidth": true,
+		"icons": {
+			"icon": "sap-icon://detail-view",
+			"favIcon": "",
+			"phone": "",
+			"phone@2": "",
+			"tablet": "",
+			"tablet@2": ""
+		},
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+	"sap.ui5": {
+		"rootView": {
+			"viewName": "lmco.ces.preq.view.App",
+			"type": "XML",
+			"async": true,
+			"id": "app"
+		},
+		"resources": {
+            "css": [
+                  {
+                        "uri": "css/style.css"
+                  }
+            ]
+      	},		
+		"dependencies": {
+			"minUI5Version": "1.98.0",
+			"libs": {
+				"sap.f": {},
+				"sap.m": {},
+				"sap.ui.core": {},
+				"sap.ui.comp": {},
+				"sap.ui.table": {},
+				"sap.ui.layout": {},
+				"lmco.ces.core":{}
+			}
+		},
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
+		},
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "lmco.ces.preq.i18n.i18n",
+					"supportedLocales": [
+						""
+					],
+					"fallbackLocale": ""
+				}
+			},
+			"": {
+				"dataSource": "mainService",
+				"settings": {
+					"defaultBindingMode": "TwoWay",
+					"useBatch": true,
+					"refreshAfterChange": true,
+					"disableAutomaticErrorMessageHandling": true,
+					"tokenHandling": true
+				},
+				"preload": false
+			}
+		},
+		"routing": {
+			"config": {
+				"routerClass": "sap.f.routing.Router",
+				"type": "View",
+				"viewType": "XML",
+				"path": "lmco.ces.preq.view",
+				"controlId": "layout",
+				"controlAggregation": "beginColumnPages",
+				"bypassed": {
+					"target": "notFound"
+				},
+				"async": true
+			},
+			"routes": [
+				{
+					"pattern": "",
+					"name": "master",
+					"target": "master"
+				},
+				{
+					"pattern": "PRQ/{objectId}/:?query:",
+					"name": "object",
+					"target": [
+						"master",
+						"object"
+					]
+				},
+				{
+					"pattern": "PRQ/{objectId}/{itemId}:?query:",
+					"name": "objectItem",
+					"target": [
+						"master",
+						"object",
+						"item"
+					]
+				}
+			],
+			"targets": {
+				"master": {
+					"name": "Master",
+					"level": 1,
+					"id": "master",
+					"controlAggregation": "beginColumnPages"
+				},
+				"object": {
+					"name": "Detail",
+					"id": "detail",
+					"level": 1,
+					"controlAggregation": "midColumnPages"
+				},
+				"item": {
+					"name": "Item",
+					"id": "item",
+					"level": 1,
+					"controlAggregation": "endColumnPages"
+				},
+				"detailObjectNotFound": {
+					"name": "DetailObjectNotFound",
+					"id": "detailObjectNotFound",
+					"controlAggregation": "midColumnPages"
+				},
+				"notFound": {
+					"name": "NotFound",
+					"id": "notFound"
+				},
+				"itemDetails": {
+					"name": "ItemDetails",
+					"parent": "item",
+					"controlId": "iconTabFilterItemDetails",
+					"controlAggregation": "content"
+				},
+				"general": {
+					"name": "General",
+					"parent": "object",
+					"controlId": "iconTabFilterGeneral",
+					"controlAggregation": "content"
+				},
+				"itemList": {
+					"name": "ItemList",
+					"parent": "object",
+					"controlId": "iconTabFilterItemList",
+					"controlAggregation": "content"
+				},
+				"shipping": {
+					"name": "Shipping",
+					"parent": "object",
+					"controlId": "iconTabFilterShipping",
+					"controlAggregation": "content"
+				},
+				"itemAccList": {
+					"name": "ItemAccList",
+					"parent": "item",
+					"controlId": "iconTabFilterItemAccList",
+					"controlAggregation": "content"
+				},
+				"itemNotes": {
+					"name": "ItemNoteEdit",
+					"parent": "item",
+					"controlId": "iconTabFilterItemNotes",
+					"controlAggregation": "content"
+				},
+				"processor": {
+					"name": "Processor",
+					"parent": "object",
+					"controlId": "iconTabFilterProcessor",
+					"controlAggregation": "content"
+				},
+				"attachments": {
+					"name": "HeaderAttach",
+					"parent": "object",
+					"controlId": "iconTabFilterAttach",
+					"controlAggregation": "content"
+				}
+			}
+		}
+	}
+}
