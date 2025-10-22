@@ -1,0 +1,108 @@
+  method _dogettensors.
+
+    data: _ttab type table of zces_tokens.
+    data: r_filter type range of char32.
+
+    data: _ctx type ref to /iwbep/cl_mgw_request.
+
+    data: r_trg  type range of char32.
+    data: r_type type range of char32.
+
+    data: __tokens type table of char40,
+          lr_token type ref to char40.
+
+    data: _trg    type char32,
+          _tensor type string,
+          _type   type string,
+          _tokens type table of string.
+
+    data: _parameters type /iwbep/t_mgw_name_value_pair,
+          _par        type /iwbep/s_mgw_name_value_pair,
+          _exdata     type zprq_msg_fs.
+
+    field-symbols: <parameter> type /iwbep/s_mgw_name_value_pair,
+                   <wa>        type zces_tokens,
+                   <tkn>       type any,
+                   <rng>       like line of r_trg,
+                   <fld>       type any.
+
+    try.
+        _ctx ?= io_tech_request_context.
+
+      catch cx_root.
+        return.
+
+    endtry.
+
+    clear r_filter.
+    append initial line to r_filter assigning <rng>. <rng> = 'IEQLESS'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQUSE'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQWHY'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQTHIS'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQLEFT'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQWAS'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQRIGHT'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQWHAT'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQWHICH'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQWHERE'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQTHERE'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQTHAT'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQAND'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQSMALL'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQWHEN'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQTHEN'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQTHAN'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQOFF'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQPRE'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQOVER'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQUNDER'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQPLUS'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQWITH'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQWITHOUT'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQFOR'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQFROM'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQBUT'.
+    append initial line to r_filter assigning <tkn>. <tkn> = 'IEQMORE'.
+
+
+    clear r_trg.
+    _parameters = _ctx->/iwbep/if_mgw_req_func_import~get_parameters( ).
+    read table _parameters assigning <parameter> with key name = 'TOKENSTRING'.
+    if sy-subrc eq 0 and <parameter> is assigned.
+      _tensor = <parameter>-value.
+      translate _tensor to upper case.
+      split _tensor at '#' into table __tokens.
+      loop at __tokens assigning <tkn>.
+        if strlen( <tkn> ) > 2.
+          if <tkn> in r_filter.
+            continue.
+          else.
+            append initial line to r_trg assigning <rng>.
+            <rng>-sign = 'I'.
+            <rng>-option = 'EQ'.
+            <rng>-low = <tkn>.
+          endif.
+        endif.
+      endloop.
+    endif.
+    unassign <parameter>.
+
+    clear r_type.
+    read table _parameters assigning <parameter> with key name = 'TYPE'.
+    if sy-subrc eq 0 and <parameter> is assigned.
+      append initial line to r_type assigning <rng>.
+      <rng>-sign = 'I'.
+      <rng>-option = 'EQ'.
+      <rng>-low = <parameter>-value.
+    endif.
+    unassign <parameter>.
+
+    select * into table _ttab from zces_tokens where token in r_trg and type in r_type.
+
+    copy_data_to_ref(
+       exporting
+         is_data = _ttab
+       changing
+         cr_data = er_data ).
+
+  endmethod.
