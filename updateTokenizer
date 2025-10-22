@@ -1,0 +1,95 @@
+  method _doupdatetokenizer.
+
+    data: _ttab type table of zces_tokens.
+
+    data: _ctx type ref to /iwbep/cl_mgw_request.
+
+    data: r_trg type range of char32.
+
+    data: _trg    type char32,
+          _type   type char32,
+          _tensor type string,
+          _tokens type table of string.
+
+    data: _parameters type /iwbep/t_mgw_name_value_pair,
+          _par        type /iwbep/s_mgw_name_value_pair,
+          _exdata     type zprq_msg_fs.
+
+    field-symbols: <parameter> type /iwbep/s_mgw_name_value_pair,
+                   <wa>        type zces_tokens,
+                   <tkn>       type any,
+                   <rng>       like line of r_trg,
+                   <fld>       type any.
+
+    try.
+        _ctx ?= io_tech_request_context.
+
+      catch cx_root.
+        return.
+
+    endtry.
+
+    clear r_trg.
+    _parameters = _ctx->/iwbep/if_mgw_req_func_import~get_parameters( ).
+    read table _parameters assigning <parameter> with key name = 'TRG'.
+    if sy-subrc eq 0 and <parameter> is assigned.
+      _trg = <parameter>-value.
+      translate _trg to upper case.
+      if _trg is not initial.
+        append initial line to r_trg assigning <rng>.
+        <rng>-sign = 'I'.
+        <rng>-option = 'EQ'.
+        <rng>-low = _trg.
+      endif.
+    endif.
+    unassign <parameter>.
+
+    read table _parameters assigning <parameter> with key name = 'TOKEN'.
+    if sy-subrc eq 0 and <parameter> is assigned.
+      _tensor = <parameter>-value.
+    endif.
+    unassign <parameter>.
+
+    clear _type.
+    read table _parameters assigning <parameter> with key name = 'TYPE'.
+    if sy-subrc eq 0 and <parameter> is assigned.
+      _type = <parameter>-value.
+    endif.
+    unassign <parameter>.
+
+
+    split _tensor at ';' into table _tokens.
+
+    select * into table _ttab from zces_tokens where trg eq _trg.
+
+    loop at _tokens assigning <tkn>.
+      translate <tkn> to upper case.
+      read table _ttab assigning <wa> with key token = <tkn>.
+      if sy-subrc ne 0.
+        append initial line to _ttab assigning <wa>.
+        <wa>-trg = _trg.
+        <wa>-token = <tkn>.
+        <wa>-type = _type.
+        get time stamp field <wa>-tstamp.
+        <wa>-score = 20.
+      else.
+        add 5 to <wa>-score.
+      endif.
+    endloop.
+
+    if _ttab is not initial.
+      modify zces_tokens from table _ttab.
+      if sy-subrc eq 0.
+        commit work.
+      endif.
+    endif.
+
+    clear _exdata.
+
+    copy_data_to_ref(
+       exporting
+         is_data = _exdata
+       changing
+         cr_data = er_data ).
+
+  endmethod.
